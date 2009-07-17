@@ -16,4 +16,9 @@ public class PipeStats {
 	public long getBytesOut() {
 		return _bytesOut.get();
 	}
+
+	@Override
+	public String toString() {
+		return String.format("[BytesIn:%s BytesOut:%s]", getBytesIn(), getBytesOut());
+	}
 }

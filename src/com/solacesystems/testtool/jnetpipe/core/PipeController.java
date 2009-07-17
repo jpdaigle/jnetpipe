@@ -9,6 +9,10 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 /**
@@ -31,7 +35,9 @@ public class PipeController implements SocketConnectAcceptor {
 	List<SocketChannel> _channels;
 	List<PipeInstance> _pipes;
 	PipeControllerState _state;
-
+    
+	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(); 
+    	
 	public PipeController(
 		final int localPort,
 		final InetAddress remoteAddr,
@@ -48,6 +54,7 @@ public class PipeController implements SocketConnectAcceptor {
 		_channels = new ArrayList<SocketChannel>();
 		_pipes = new ArrayList<PipeInstance>();
 		setState(PipeControllerState.UP);
+		scheduleDumpStats();
 	}
 
 	public void acceptConnection() throws IOException {
@@ -84,5 +91,35 @@ public class PipeController implements SocketConnectAcceptor {
 	private void setState(PipeControllerState newstate) {
 		trace.info(String.format("State Transition (%s): %s -> %s\n", this, _state, newstate));
 		_state = newstate;
+	}
+
+	private void scheduleDumpStats() {
+		final Runnable statDumper = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					dumpStats();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+		};
+//		final ScheduledFuture<?> statDumperHandle = scheduler.scheduleAtFixedRate(
+//			statDumper, 1, 1, TimeUnit.SECONDS);
+		
+		final ScheduledFuture<?> statDumperHandle = scheduler.scheduleAtFixedRate(
+			statDumper, 500, 500, TimeUnit.MILLISECONDS);
+	}
+	
+	private void dumpStats() {
+		StringBuilder str = new StringBuilder();
+		str.append(String.format("Stats (%s PipeInstances)\n", _pipes.size()));
+		for (PipeInstance pi : _pipes) {
+			str.append("  ");
+			str.append(pi.toString()).append(" ");
+			str.append(pi.getStats().toString());
+			str.append("\n");
+		}
+		trace.info(str);
 	}
 }

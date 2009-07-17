@@ -140,5 +140,10 @@ public class PipeInstance implements SocketConnector {
 		ChannelController reader = (source == _localCtrler) ? _remoteCtrler : _localCtrler;
 		reader.registerRead(true);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s (%s)", _name, _pipeState);
+	}
 
 }
