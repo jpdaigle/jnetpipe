@@ -2,6 +2,8 @@
 JNetPipe is a TCP/IP forwarding tunnel and protocol testing tool for 
 simulating TCP connection failures.
 
+Jean-Philippe Daigle ([jpdaigle@gmail.com](mailto://jpdaigle@gmail.com))
+
 ## USAGE
 TODO
 
@@ -14,5 +16,8 @@ tool matures.
 Gratitude to my employer, Solace, for supporting development.
 
 ## LICENSE
-BSD License. See <tt>license.BSD.txt</tt> in this directory.
+* JNetPipe is available under a BSD License. See 
+<tt>license.BSD.txt</tt> in this directory.
+* Third-party JARs are redistributed under their respective 
+licenses, see <tt>/lib</tt>.
 

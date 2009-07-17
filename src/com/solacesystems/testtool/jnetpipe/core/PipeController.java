@@ -36,8 +36,9 @@ public class PipeController implements SocketConnectAcceptor {
 	List<PipeInstance> _pipes;
 	PipeControllerState _state;
     
-	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(); 
-    	
+	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+	ScheduledFuture<?> statDumperHandle = null;
+	
 	public PipeController(
 		final int localPort,
 		final InetAddress remoteAddr,
@@ -104,10 +105,7 @@ public class PipeController implements SocketConnectAcceptor {
 				}
 			}
 		};
-//		final ScheduledFuture<?> statDumperHandle = scheduler.scheduleAtFixedRate(
-//			statDumper, 1, 1, TimeUnit.SECONDS);
-		
-		final ScheduledFuture<?> statDumperHandle = scheduler.scheduleAtFixedRate(
+		statDumperHandle = scheduler.scheduleAtFixedRate(
 			statDumper, 500, 500, TimeUnit.MILLISECONDS);
 	}
 	
