@@ -55,7 +55,6 @@ public class PipeController implements SocketConnectAcceptor {
 		_channels = new ArrayList<SocketChannel>();
 		_pipes = new ArrayList<PipeInstance>();
 		setState(PipeControllerState.UP);
-		scheduleDumpStats();
 	}
 
 	public void acceptConnection() throws IOException {
@@ -94,7 +93,9 @@ public class PipeController implements SocketConnectAcceptor {
 		_state = newstate;
 	}
 
-	private void scheduleDumpStats() {
+	public void enableStats() {
+		if (statDumperHandle != null)
+			return;
 		final Runnable statDumper = new Runnable() {
 			@Override
 			public void run() {
@@ -106,17 +107,23 @@ public class PipeController implements SocketConnectAcceptor {
 			}
 		};
 		statDumperHandle = scheduler.scheduleAtFixedRate(
-			statDumper, 500, 500, TimeUnit.MILLISECONDS);
+			statDumper, 0, 1000, TimeUnit.MILLISECONDS);
+	}
+	
+	public void disableStats() {
+		statDumperHandle.cancel(false);
+		statDumperHandle = null;
 	}
 	
 	private void dumpStats() {
 		StringBuilder str = new StringBuilder();
-		str.append(String.format("Stats (%s PipeInstances)\n", _pipes.size()));
+		str.append(String.format("Stats (%s PipeInstances)", _pipes.size()));
+		if (_pipes.size() > 0)
+			str.append("\n");
 		for (PipeInstance pi : _pipes) {
 			str.append("  ");
 			str.append(pi.toString()).append(" ");
 			str.append(pi.getStats().toString());
-			str.append("\n");
 		}
 		trace.info(str);
 	}

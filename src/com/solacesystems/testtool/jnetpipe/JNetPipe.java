@@ -15,16 +15,49 @@ public class JNetPipe {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		configureLogging();
+		
+		boolean debug = false;
+		boolean stats = false;
+		int localPort = 0, remotePort = 0;
+		String remoteHost = null;
+		
+		for(int i = 0; i < args.length; i++) {
+			if (args[i].equals("-d")) {
+				debug = true;
+			} else if (args[i].equals("-h")) {
+				printUsage();
+				return;
+			} else if (args[i].equals("-s")) {
+				stats = true;
+			} else {
+				// Argument is a tunnel spec PORT:REMOTEHOST:REMOTEPORT
+				String[] tspec = args[i].split(":");
+				if (tspec.length != 3) {
+					printUsage();
+					return;
+				}
+				localPort = Integer.parseInt(tspec[0]);
+				remoteHost = tspec[1];
+				remotePort = Integer.parseInt(tspec[2]);
+			}
+		}
+		
+		if (remoteHost == null) {
+			printUsage();
+			return;
+		}
+		
+		configureLogging(debug);
 		
 		IoContext ctx = new IoContext();
 		try {
 			PipeController pc = new PipeController(
-				5901, 
-				Inet4Address.getByName("192.168.1.246"),
-				5901, 
+				localPort, 
+				Inet4Address.getByName(remoteHost),
+				remotePort, 
 				ctx);
-			
+			if (stats)
+				pc.enableStats();
 			pc.start();
 			System.out.println("Sleeping...");
 			Thread.sleep(3600 * 1000);
@@ -34,11 +67,17 @@ public class JNetPipe {
 		}
 	}
 	
-	private static void configureLogging() {
+	private static void printUsage() {
+		System.out.println("Usage: JNetPipe [-d] [-s] LOCALPORT:REMOTEHOST:REMOTEPORT");
+		System.out.println("   -d: debug");
+		System.out.println("   -s: Dump stats");
+	}
+	
+	private static void configureLogging(boolean debug) {
 		ConsoleAppender ap = new ConsoleAppender();
 		Layout layout = new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN);
 		ap.setLayout(layout);
-		ap.setThreshold(Level.INFO);
+		ap.setThreshold(debug ? Level.DEBUG : Level.INFO);
 		ap.activateOptions();
 		BasicConfigurator.configure(ap);
 	}
