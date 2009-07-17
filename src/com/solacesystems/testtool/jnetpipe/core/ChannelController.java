@@ -22,12 +22,12 @@ public class ChannelController implements SocketWriter {
 	}
 
 	public void registerRead(boolean reg) {
-		trace.info(String.format("registerRead[%s], %s", this, reg));
+		trace.debug(String.format("registerRead[%s], %s", this, reg));
 		_parentPipe.getIoContext().regRW(SelectionKey.OP_READ, reg, this);
 	}
 
 	public void registerWrite(boolean reg) {
-		trace.info(String.format("registerWrite[%s], %s", this, reg));
+		trace.debug(String.format("registerWrite[%s], %s", this, reg));
 		_parentPipe.getIoContext().regRW(SelectionKey.OP_WRITE, reg, this);
 	}
 

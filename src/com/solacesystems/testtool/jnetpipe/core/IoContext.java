@@ -52,11 +52,8 @@ public class IoContext {
 				}
 
 				// Wait on operations
-				long stime = System.currentTimeMillis();
 				int ready = _selector.select(1000);
-				long etime = System.currentTimeMillis();
 				Set<SelectionKey> keys = _selector.selectedKeys();
-				System.out.println(">> " + (etime - stime) + " keys: " + keys.size());
 				if (keys.size() > 0) {
 					trace.debug("IO: KEYS READY " + keys);
 					Iterator<SelectionKey> it = keys.iterator();
