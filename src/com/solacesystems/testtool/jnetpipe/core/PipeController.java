@@ -8,6 +8,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -126,5 +127,9 @@ public class PipeController implements SocketConnectAcceptor {
 			str.append(pi.getStats().toString());
 		}
 		trace.info(str);
+	}
+	
+	public List<PipeInstance> getPipes() {
+		return Collections.unmodifiableList(_pipes);
 	}
 }

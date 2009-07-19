@@ -1,16 +1,31 @@
 package com.solacesystems.testtool.jnetpipe;
 
+import java.awt.Dimension;
 import java.net.Inet4Address;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
+
+import bsh.EvalError;
+import bsh.Interpreter;
+import bsh.util.JConsole;
+import bsh.util.NameCompletionTable;
+
 import com.solacesystems.testtool.jnetpipe.core.IoContext;
 import com.solacesystems.testtool.jnetpipe.core.PipeController;
 
 public class JNetPipe {
 
+	private static Interpreter interpreter;
+	
 	public static void main(String[] args) {
 		
 		boolean debug = false;
@@ -56,9 +71,16 @@ public class JNetPipe {
 				ctx);
 			if (stats)
 				pc.enableStats();
+			
+			// Start PipeController (accepts connections)
 			pc.start();
+			
+			// Start the BeanShell ui
+			startConsole(pc);
+			
+			// Wait forever
 			System.out.println("Sleeping...");
-			Thread.sleep(3600 * 1000);
+			Thread.sleep(Long.MAX_VALUE);
 		} catch (Exception ex) {
 			System.err.println("MAIN>> " + ex);
 			ex.printStackTrace();
@@ -78,5 +100,39 @@ public class JNetPipe {
 		ap.setThreshold(debug ? Level.DEBUG : Level.INFO);
 		ap.activateOptions();
 		BasicConfigurator.configure(ap);
+	}
+	
+	private static void startConsole(final PipeController pipe) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				// This is all standard boilerplate for creating a JFrame
+				JFrame frame = new JFrame();
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setPreferredSize(new Dimension(600, 400));
+
+				// BeanShell objects
+				// The PipeController will be accessible as variable "netpipe"
+				JConsole console = new JConsole();
+				interpreter = new Interpreter(console);
+				try {
+					interpreter.set("netpipe", pipe);
+				} catch (EvalError e) {
+					e.printStackTrace();
+				}
+				NameCompletionTable nct = new NameCompletionTable();
+				console.setNameCompletion(nct);
+
+				// Build the frame
+				JScrollPane pane = new JScrollPane(console);
+				pane.setBorder(new EmptyBorder(5, 5, 5, 5));
+				frame.add(pane);
+				final Thread thread = new Thread(interpreter, "BeanShell");
+				thread.setDaemon(true);
+				thread.start();
+				frame.pack();
+				frame.setVisible(true);
+			}
+		});
 	}
 }
