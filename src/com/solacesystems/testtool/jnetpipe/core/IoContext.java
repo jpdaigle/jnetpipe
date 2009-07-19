@@ -21,14 +21,19 @@ public class IoContext {
 	private Selector _selector;
 
 	public IoContext() {
+		_regOps = new LinkedBlockingQueue<Runnable>();
 		try {
 			_selector = Selector.open();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			return;
 		}
-
-		_regOps = new LinkedBlockingQueue<Runnable>();
+	}
+	
+	public void start() {
+		if (_worker != null) {
+			return; // already started
+		}
 		_worker = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -40,7 +45,7 @@ public class IoContext {
 		_worker.setDaemon(true);
 		_worker.start();
 	}
-
+	
 	public void io_loop() {
 		while (true) {
 			try {
@@ -92,7 +97,6 @@ public class IoContext {
 		_regOps.add(r);
 		_selector.wakeup();
 	}
-
 
 	private Runnable newRegRWOp(final int ops, final boolean addOps, final IoProvider io) {
 		return new Runnable() {

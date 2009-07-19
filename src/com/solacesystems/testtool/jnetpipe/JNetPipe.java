@@ -11,9 +11,6 @@ import com.solacesystems.testtool.jnetpipe.core.PipeController;
 
 public class JNetPipe {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		
 		boolean debug = false;
@@ -50,6 +47,7 @@ public class JNetPipe {
 		configureLogging(debug);
 		
 		IoContext ctx = new IoContext();
+		ctx.start();
 		try {
 			PipeController pc = new PipeController(
 				localPort, 
