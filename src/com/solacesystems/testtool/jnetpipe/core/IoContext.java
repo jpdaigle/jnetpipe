@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import org.apache.log4j.Logger;
 
 public class IoContext {
@@ -52,9 +51,9 @@ public class IoContext {
 				}
 
 				// Wait on operations
-				int ready = _selector.select(1000);
-				Set<SelectionKey> keys = _selector.selectedKeys();
-				if (keys.size() > 0) {
+				final int ready = _selector.select(1000);
+				if (ready > 0) {
+					Set<SelectionKey> keys = _selector.selectedKeys();
 					trace.debug("IO: KEYS READY " + keys);
 					Iterator<SelectionKey> it = keys.iterator();
 					while (it.hasNext()) {

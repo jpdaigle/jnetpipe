@@ -32,7 +32,6 @@ public class PipeController implements SocketConnectAcceptor {
 	int _remotePort, _localPort;
 	IoContext _ioContext;
 
-	List<SocketChannel> _channels;
 	List<PipeInstance> _pipes;
 	PipeControllerState _state;
     
@@ -52,7 +51,6 @@ public class PipeController implements SocketConnectAcceptor {
 		_remoteAddress = remoteAddr;
 		_remotePort = remotePort;
 		_ioContext = ctx;
-		_channels = new ArrayList<SocketChannel>();
 		_pipes = new ArrayList<PipeInstance>();
 		setState(PipeControllerState.UP);
 	}
@@ -111,6 +109,8 @@ public class PipeController implements SocketConnectAcceptor {
 	}
 	
 	public void disableStats() {
+		if (statDumperHandle == null)
+			return;
 		statDumperHandle.cancel(false);
 		statDumperHandle = null;
 	}

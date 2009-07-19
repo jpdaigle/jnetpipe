@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 import com.solacesystems.testtool.jnetpipe.core.impl.PipeStatsImpl;
@@ -51,7 +53,7 @@ public class PipeInstance implements SocketConnector {
 		setState(PipeState.CONNECTING);
 		_remoteChannel = SocketChannel.open();
 		_remoteChannel.configureBlocking(false);
-		_remoteCtrler = new ChannelController(_remoteChannel, this, String.format("remote-%s", _id));
+		_remoteCtrler = new ChannelController(_remoteChannel, this, String.format("remoteChannel-%s", _id));
 		boolean connectresult = _remoteChannel.connect(_remoteSocketAddress);
 		if (!connectresult) {
 			_ioContext.regFinishConnect(this, true);
@@ -85,23 +87,21 @@ public class PipeInstance implements SocketConnector {
 		trace.info(String.format("State Transition (%s): %s -> %s\n", this, _pipeState, newstate));
 		// TODO: refactor this: cleaner state design!!!
 
+		List<ChannelController> channels = Arrays.asList(_localCtrler, _remoteCtrler);
 		switch (newstate) {
 		case UP:
-			if (_localCtrler != null) {
-				_localCtrler.registerRead(true);
-			}
-			if (_remoteCtrler != null) {
-				_remoteCtrler.registerRead(true);
+			for(ChannelController cc : channels) {
+				if (cc != null) {
+					cc.registerRead(true);
+				}
 			}
 			break;
 		case DOWN:
-			if (_localCtrler != null) {
-				_localCtrler.registerRead(false);
-				_localCtrler.close();
-			}
-			if (_remoteCtrler != null) {
-				_remoteCtrler.registerRead(false);
-				_remoteCtrler.close();
+			for(ChannelController cc : channels) {
+				if (cc != null) {
+					cc.registerRead(false);
+					cc.close();
+				}
 			}
 			break;
 		}
@@ -133,9 +133,7 @@ public class PipeInstance implements SocketConnector {
 		writer.queueWrite(buf);
 	}
 
-	/**
-	 * callback when a queued write completes
-	 */
+	/** callback when a queued write completes */
 	public void writeComplete(ChannelController source) {
 		ChannelController reader = (source == _localCtrler) ? _remoteCtrler : _localCtrler;
 		reader.registerRead(true);
