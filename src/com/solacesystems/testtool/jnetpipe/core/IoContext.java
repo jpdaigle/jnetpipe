@@ -1,22 +1,23 @@
 package com.solacesystems.testtool.jnetpipe.core;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-
+import java.util.concurrent.ScheduledExecutorService;
 import org.apache.log4j.Logger;
 
 public class IoContext {
-
-	public static final Logger trace = Logger.getLogger(IoContext.class);
-
+	// Flags for SelectionKey operations
 	public static final int FL_IGNOREEXCEPTIONS = 1;
+
+	private static final Logger trace = Logger.getLogger(IoContext.class);
+	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	
 	private Thread _worker;
 	private Queue<Runnable> _regOps;
@@ -141,6 +142,10 @@ public class IoContext {
 	public void regRW(final int ops, final boolean addOps, final SocketWriter sw, final int flags) {
 		Runnable r = newRegRWOp(ops, addOps, sw, flags);
 		addRegOp(r);
+	}
+
+	public ScheduledExecutorService getScheduler() {
+		return scheduler;
 	}
 
 }

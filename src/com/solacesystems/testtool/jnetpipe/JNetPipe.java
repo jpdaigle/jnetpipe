@@ -118,7 +118,8 @@ public class JNetPipe {
 				// This is all standard boilerplate for creating a JFrame
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setPreferredSize(new Dimension(600, 400));
+				frame.setPreferredSize(new Dimension(900, 600));
+				frame.setName("JNetPipe shell");
 
 				// BeanShell objects
 				// The PipeController will be accessible as variable "netpipe"

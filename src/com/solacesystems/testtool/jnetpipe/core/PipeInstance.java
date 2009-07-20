@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 import com.solacesystems.testtool.jnetpipe.core.impl.PipeStatsImpl;
@@ -24,18 +25,21 @@ public class PipeInstance implements SocketConnector {
 	final String _name;
 	final int _id;
 	final PipeStatsImpl _stats;
+	final PipeController _parent;
 	
 	public PipeInstance(
 		SocketChannel localChannel,
 		InetAddress remoteAddr,
 		int remotePort,
-		IoContext ctx) {
+		IoContext ctx,
+		PipeController parent) {
 		_ioContext = ctx;
 		_localChannel = localChannel;
 		_id = counter.getAndIncrement();
 		_stats = new PipeStatsImpl();
 		_name = String.format("PipeInstance-%s", _id);
 		_remoteSocketAddress = new InetSocketAddress(remoteAddr, remotePort);
+		_parent = parent;
 		try {
 			_localCtrler = new ChannelController(
 				_localChannel, 
@@ -99,6 +103,8 @@ public class PipeInstance implements SocketConnector {
 		List<ChannelController> channels = Arrays.asList(_localCtrler, _remoteCtrler);
 		switch (newstate) {
 		case UP:
+			if (_pipeState == PipeState.UP)
+				break;
 			for(ChannelController cc : channels) {
 				if (cc != null) {
 					cc.registerRead(true, 0);
@@ -106,12 +112,23 @@ public class PipeInstance implements SocketConnector {
 			}
 			break;
 		case DOWN:
+			if (_pipeState == PipeState.DOWN)
+				break;
 			for(ChannelController cc : channels) {
 				if (cc != null) {
 					cc.registerRead(false, IoContext.FL_IGNOREEXCEPTIONS);
 					cc.close();
 				}
 			}
+			Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					// Remove this from parent pipe registry
+					trace.info("60 second timeout: cleaned up dead pipe " + this.toString());
+					_parent.registerPipe(PipeInstance.this, false);
+				}
+			};
+			_ioContext.getScheduler().schedule(r, 60, TimeUnit.SECONDS);
 			break;
 		}
 		_pipeState = newstate;

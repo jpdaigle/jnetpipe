@@ -8,3 +8,9 @@ killPipe( PipeInstance pi ) {
 		pi.state = "DOWN";
 	}
 }
+
+killPipe( java.util.List pipes ) {
+	for(o : pipes) {
+		killPipe(o);
+	}
+}
