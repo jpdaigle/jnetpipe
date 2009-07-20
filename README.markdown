@@ -5,7 +5,20 @@ simulating TCP connection failures.
 Jean-Philippe Daigle ([jpdaigle@gmail.com](mailto://jpdaigle@gmail.com))
 
 ## USAGE
-    // TODO
+    // TODO: (complete)
+
+JNetPipe, in its default run mode, operates pretty much like an SSH tunnel: it hooks up a 
+specified local port to a remote address and port. That's it. You can use it for port forwarding 
+like so, the tunnel syntax even mirrors SSH's:
+
+    java JNetPipe <LOCALPORT>:<REMOTEHOST>:<REMOTEPORT>
+
+Where it gets interesting is when you use it in interactive mode with the embedded BeanShell:
+
+    java JNetPipe <LOCALPORT>:<REMOTEHOST>:<REMOTEPORT> --shell
+
+This will create a tunnel and launch a shell where tunnels can be examined, 
+started and stopped, stats can be printed, etc.
 
 ## STATUS
 This software should be considered (very) experimental. Interfaces, both
