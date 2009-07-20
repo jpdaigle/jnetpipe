@@ -31,6 +31,7 @@ public class JNetPipe {
 		
 		boolean debug = false;
 		boolean stats = false;
+		boolean shell = false;
 		int localPort = 0, remotePort = 0;
 		String remoteHost = null;
 		
@@ -40,8 +41,10 @@ public class JNetPipe {
 			} else if (args[i].equals("-h")) {
 				printUsage();
 				return;
-			} else if (args[i].equals("-s")) {
+			} else if (args[i].equals("-s") || args[i].equals("--stats")) {
 				stats = true;
+			} else if (args[i].equals("--shell")) {
+				shell = true;
 			} else {
 				// Argument is a tunnel spec PORT:REMOTEHOST:REMOTEPORT
 				String[] tspec = args[i].split(":");
@@ -77,7 +80,8 @@ public class JNetPipe {
 			pc.start();
 			
 			// Start the BeanShell ui
-			startConsole(pc);
+			if (shell)
+				startConsole(pc);
 			
 			// Wait forever
 			System.out.println("Sleeping...");
@@ -92,9 +96,10 @@ public class JNetPipe {
 	}
 	
 	private static void printUsage() {
-		System.out.println("Usage: JNetPipe [-d] [-s] LOCALPORT:REMOTEHOST:REMOTEPORT");
-		System.out.println("   -d: debug");
-		System.out.println("   -s: Dump stats");
+		System.out.println("Usage: JNetPipe [-d] [--stats] [--shell] LOCALPORT:REMOTEHOST:REMOTEPORT");
+		System.out.println("   -d:      Debug");
+		System.out.println("   --stats: Dump stats");
+		System.out.println("   --shell: Start shell");
 	}
 	
 	private static void configureLogging(boolean debug) {
@@ -125,8 +130,9 @@ public class JNetPipe {
 					e.printStackTrace();
 				}
 				NameCompletionTable nct = new NameCompletionTable();
+				nct.add(interpreter.getNameSpace());
 				console.setNameCompletion(nct);
-
+				
 				// Build the frame
 				JScrollPane pane = new JScrollPane(console);
 				pane.setBorder(new EmptyBorder(5, 5, 5, 5));
