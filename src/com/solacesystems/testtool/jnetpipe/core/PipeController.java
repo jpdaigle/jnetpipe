@@ -81,10 +81,12 @@ public class PipeController implements SocketConnectAcceptor {
 	}
 
 	public void start() {
+		trace.info("Starting connection acceptor.");
 		_ioContext.regServerAccept(this, true);
 	}
 
 	public void stop() {
+		trace.info("Stopping connection acceptor.");
 		_ioContext.regServerAccept(this, false);
 	}
 
