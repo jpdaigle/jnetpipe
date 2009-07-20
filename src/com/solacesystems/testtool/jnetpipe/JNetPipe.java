@@ -1,6 +1,7 @@
 package com.solacesystems.testtool.jnetpipe;
 
 import java.awt.Dimension;
+import java.io.IOException;
 import java.net.Inet4Address;
 
 import javax.swing.JFrame;
@@ -81,7 +82,10 @@ public class JNetPipe {
 			// Wait forever
 			System.out.println("Sleeping...");
 			Thread.sleep(Long.MAX_VALUE);
-		} catch (Exception ex) {
+		} catch (IOException ex) {
+			System.err.println("MAIN>> " + ex);
+			ex.printStackTrace();
+		} catch (InterruptedException ex) {
 			System.err.println("MAIN>> " + ex);
 			ex.printStackTrace();
 		}

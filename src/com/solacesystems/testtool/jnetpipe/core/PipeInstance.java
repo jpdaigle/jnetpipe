@@ -79,6 +79,7 @@ public class PipeInstance implements SocketConnector {
 			_ioContext.regFinishConnect(this, false);
 			setState(PipeState.UP);
 		} catch (IOException ex) {
+			trace.warn("Connect error.", ex);
 			setState(PipeState.DOWN);
 		}
 	}
@@ -92,14 +93,14 @@ public class PipeInstance implements SocketConnector {
 		case UP:
 			for(ChannelController cc : channels) {
 				if (cc != null) {
-					cc.registerRead(true);
+					cc.registerRead(true, 0);
 				}
 			}
 			break;
 		case DOWN:
 			for(ChannelController cc : channels) {
 				if (cc != null) {
-					cc.registerRead(false);
+					cc.registerRead(false, IoContext.FL_IGNOREEXCEPTIONS);
 					cc.close();
 				}
 			}
@@ -122,7 +123,7 @@ public class PipeInstance implements SocketConnector {
 	public void incomingData(ByteBuffer buf, ChannelController source) {
 		// A pipe is bringing in data, we echo it to the output (the other pipe)
 		
-		source.registerRead(false);
+		source.registerRead(false, 0);
 		if (source == _localCtrler) {
 			_stats.incrBytesOut(buf.remaining());
 		} else if (source == _remoteCtrler) {
@@ -136,7 +137,7 @@ public class PipeInstance implements SocketConnector {
 	/** callback when a queued write completes */
 	public void writeComplete(ChannelController source) {
 		ChannelController reader = (source == _localCtrler) ? _remoteCtrler : _localCtrler;
-		reader.registerRead(true);
+		reader.registerRead(true, 0);
 	}
 	
 	@Override

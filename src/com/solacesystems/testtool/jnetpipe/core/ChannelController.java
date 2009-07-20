@@ -21,14 +21,14 @@ public class ChannelController implements SocketWriter {
 		_name = name;
 	}
 
-	public void registerRead(boolean reg) {
+	public void registerRead(boolean reg, int flags) {
 		trace.debug(String.format("registerRead[%s], %s", this, reg));
-		_parentPipe.getIoContext().regRW(SelectionKey.OP_READ, reg, this);
+		_parentPipe.getIoContext().regRW(SelectionKey.OP_READ, reg, this, flags);
 	}
 
-	public void registerWrite(boolean reg) {
+	public void registerWrite(boolean reg, int flags) {
 		trace.debug(String.format("registerWrite[%s], %s", this, reg));
-		_parentPipe.getIoContext().regRW(SelectionKey.OP_WRITE, reg, this);
+		_parentPipe.getIoContext().regRW(SelectionKey.OP_WRITE, reg, this, flags);
 	}
 
 	public void close() {
@@ -62,7 +62,7 @@ public class ChannelController implements SocketWriter {
 	public void queueWrite(ByteBuffer buf) {
 		assert (_nextWrite == null);
 		_nextWrite = buf;
-		registerWrite(true);
+		registerWrite(true, 0);
 	}
 
 	/**
@@ -76,9 +76,9 @@ public class ChannelController implements SocketWriter {
 			if (bytesWritten == -1) {
 				handleIoException(new IOException("EOF on write"));
 			} else if (bytesWritten < bytesToWrite) {
-				registerWrite(true); // have more data
+				registerWrite(true, 0); // have more data
 			} else if (bytesWritten == bytesToWrite) {
-				registerWrite(false); // write done!
+				registerWrite(false, 0); // write done!
 				_nextWrite = null;
 				_parentPipe.writeComplete(this);
 			}

@@ -16,6 +16,8 @@ public class IoContext {
 
 	public static final Logger trace = Logger.getLogger(IoContext.class);
 
+	public static final int FL_IGNOREEXCEPTIONS = 1;
+	
 	private Thread _worker;
 	private Queue<Runnable> _regOps;
 	private Selector _selector;
@@ -98,7 +100,7 @@ public class IoContext {
 		_selector.wakeup();
 	}
 
-	private Runnable newRegRWOp(final int ops, final boolean addOps, final IoProvider io) {
+	private Runnable newRegRWOp(final int ops, final boolean addOps, final IoProvider io, final int flags) {
 		return new Runnable() {
 			@Override
 			public void run() {
@@ -112,9 +114,13 @@ public class IoContext {
 						newOpSet &= ~ops;
 					skey = sc.register(_selector, newOpSet);
 					skey.attach(io);
-				} catch (ClosedChannelException cce) {
-					trace.error("ClosedChannelException in interest registration", cce);
-					io.handleIoException(cce);
+				} catch (Exception ex) {
+					if ((flags & FL_IGNOREEXCEPTIONS) == 0) {
+						IOException ioe = (ex instanceof IOException) ? (IOException) ex
+							: new IOException(ex);
+						trace.error("IoException in interest registration", ioe);
+						io.handleIoException(ioe);
+					}
 				}
 			}
 		};
@@ -122,18 +128,18 @@ public class IoContext {
 
 	public void regServerAccept(final PipeController pc, final boolean addOps) {
 		// Runnable r = newRegServerAccept(pc);
-		Runnable r = newRegRWOp(SelectionKey.OP_ACCEPT, addOps, pc);
+		Runnable r = newRegRWOp(SelectionKey.OP_ACCEPT, addOps, pc, 0);
 		addRegOp(r);
 	}
 
 	public void regFinishConnect(final PipeInstance pi, final boolean addOps) {
 		// Runnable r = newRegConnectFinish(pi);
-		Runnable r = newRegRWOp(SelectionKey.OP_CONNECT, addOps, pi);
+		Runnable r = newRegRWOp(SelectionKey.OP_CONNECT, addOps, pi, 0);
 		addRegOp(r);
 	}
 
-	public void regRW(final int ops, final boolean addOps, final SocketWriter sw) {
-		Runnable r = newRegRWOp(ops, addOps, sw);
+	public void regRW(final int ops, final boolean addOps, final SocketWriter sw, final int flags) {
+		Runnable r = newRegRWOp(ops, addOps, sw, flags);
 		addRegOp(r);
 	}
 
