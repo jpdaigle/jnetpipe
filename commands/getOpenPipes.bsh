@@ -1,0 +1,11 @@
+getOpenPipes()
+{
+	lst_all = getPipes();
+	ArrayList lst_up = new ArrayList();
+	for( o : lst_all ) {
+		if (o.state.toString() == "UP") {
+			lst_up.add(o);
+		}
+	}
+	return lst_up;
+}

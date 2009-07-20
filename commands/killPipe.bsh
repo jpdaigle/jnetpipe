@@ -1,0 +1,10 @@
+import com.solacesystems.testtool.jnetpipe.core.PipeInstance;
+
+killPipe( PipeInstance pi ) {
+	if (pi == null) 
+		return;
+	if (pi.state.toString() != "DOWN") {
+		print("KILLPIPE: " + pi);
+		pi.state = "DOWN";
+	}
+}

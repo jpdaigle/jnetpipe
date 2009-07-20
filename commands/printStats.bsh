@@ -1,0 +1,16 @@
+import com.solacesystems.testtool.jnetpipe.core.PipeInstance;
+
+printStats() {
+	printStats(getPipes());
+}
+
+printStats( java.util.List l ) {
+	print(l.size() + " pipes:");
+	for(o : l) {
+		print("    " + o.toString() + ": " + o.stats);
+	}
+}
+
+printStats( PipeInstance pi ) {
+	print( pi.toString() + ": " + pi.stats );
+}

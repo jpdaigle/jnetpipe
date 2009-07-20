@@ -84,6 +84,14 @@ public class PipeInstance implements SocketConnector {
 		}
 	}
 
+	public PipeState getState() {
+		return this._pipeState;
+	}
+	
+	public void setState(String newState) {
+		setState(PipeState.valueOf(newState));
+	}
+	
 	private void setState(PipeState newstate) {
 		trace.info(String.format("State Transition (%s): %s -> %s\n", this, _pipeState, newstate));
 		// TODO: refactor this: cleaner state design!!!
@@ -138,6 +146,10 @@ public class PipeInstance implements SocketConnector {
 	public void writeComplete(ChannelController source) {
 		ChannelController reader = (source == _localCtrler) ? _remoteCtrler : _localCtrler;
 		reader.registerRead(true, 0);
+	}
+	
+	public String getName() {
+		return _name;
 	}
 	
 	@Override

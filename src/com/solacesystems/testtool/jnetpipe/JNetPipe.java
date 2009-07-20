@@ -142,6 +142,14 @@ public class JNetPipe {
 				thread.start();
 				frame.pack();
 				frame.setVisible(true);
+				
+				// load env
+				interpreter.setShowResults(true);
+				try {
+					interpreter.eval("importCommands(\"commands\");");
+				} catch (EvalError e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
