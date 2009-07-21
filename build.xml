@@ -1,8 +1,10 @@
 <project name="jnetpipe">
 	<target name="init">
-		<property name="dir.dist" value="dist"/>
+		<property name="dir.dist" value="dist/jnetpipe"/>
 		<property name="jar.dist" value="jnetpipe.jar"/>
 		<property name="dir.compile" value="_compile"/>
+		<property name="tar.dist" value="jnetpipe.tar"/>
+		
 		<path id="cp">
 			<fileset dir="./lib">
 				<include name="*.jar"/>
@@ -18,6 +20,12 @@
 			<dirset dir="${dir.dist}">
 				<include name="**/**" />
 			</dirset>
+		</delete>
+		<delete failonerror="false">
+			<fileset dir="${basedir}/dist">
+				<include name="**" />
+				<include name="**/**" />
+			</fileset>
 		</delete>
 	</target>
 
@@ -45,6 +53,12 @@
 				<include name="**/**" />
 			</fileset>
 		</jar>
+	</target>
+	
+	<target name="dist" depends="build">
+		<tar destfile="${dir.dist}/../${tar.dist}" basedir="${dir.dist}/../" excludes="jnetpipe*.tar"/>
+		<gzip zipfile="${dir.dist}/../${tar.dist}.gz" src="${dir.dist}/../${tar.dist}"/>
+		<delete file="${dir.dist}/../${tar.dist}"></delete>
 	</target>
 
 </project>
