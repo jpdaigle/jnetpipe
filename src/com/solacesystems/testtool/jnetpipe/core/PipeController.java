@@ -10,8 +10,6 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
@@ -124,7 +122,7 @@ public class PipeController implements SocketConnectAcceptor {
 		statDumperHandle = null;
 	}
 	
-	private void dumpStats() {
+	private synchronized void dumpStats() {
 		StringBuilder str = new StringBuilder();
 		str.append(String.format("Stats (%s PipeInstances)", _pipes.size()));
 		if (_pipes.size() > 0)
@@ -137,7 +135,8 @@ public class PipeController implements SocketConnectAcceptor {
 		trace.info(str);
 	}
 	
-	public List<PipeInstance> getPipes() {
-		return Collections.unmodifiableList(_pipes);
+	public synchronized List<PipeInstance> getPipes() {
+		List<PipeInstance> cpy = new ArrayList<PipeInstance>(_pipes);
+		return Collections.unmodifiableList(cpy);
 	}
 }
