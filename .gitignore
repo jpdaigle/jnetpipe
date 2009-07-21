@@ -1,4 +1,5 @@
 bin/
 .settings/
 *~
-
+dist/
+_compile/
