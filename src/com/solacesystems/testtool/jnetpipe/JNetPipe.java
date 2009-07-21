@@ -1,25 +1,23 @@
 package com.solacesystems.testtool.jnetpipe;
 
 import java.awt.Dimension;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.Inet4Address;
-
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
-
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.util.JConsole;
 import bsh.util.NameCompletionTable;
-
 import com.solacesystems.testtool.jnetpipe.core.IoContext;
 import com.solacesystems.testtool.jnetpipe.core.PipeController;
 
@@ -122,11 +120,36 @@ public class JNetPipe {
 				frame.setTitle("JNetPipe shell");
 
 				// BeanShell objects
-				// The PipeController will be accessible as variable "netpipe"
-				JConsole console = new JConsole();
+				final String LOOPEXIT = "loopexit";
+				/*
+				 * Loops in bsh scripts should always check the state of
+				 * "loopexit" in order to process Ctrl+C:
+				 * 
+				 * while(!loopexit) { ... };
+				 */
+				JConsole console = new JConsole() {
+					@Override
+					public void keyPressed(KeyEvent e) {
+						super.keyPressed(e);
+						try {
+							if (e.getKeyCode() == KeyEvent.VK_C
+								&& ((e.getModifiers() & InputEvent.CTRL_MASK) > 0)) {
+								// ctrl+c, set loopexit
+								interpreter.set(LOOPEXIT, true);
+							} else {
+								// Any other key: clear loopflag
+								interpreter.set(LOOPEXIT, false);
+							}
+						} catch (EvalError e1) {
+							e1.printStackTrace();
+						}
+					}
+				};
 				interpreter = new Interpreter(console);
 				try {
+					// The PipeController will be accessible as "netpipe"
 					interpreter.set("netpipe", pipe);
+					interpreter.set(LOOPEXIT, false);
 				} catch (EvalError e) {
 					e.printStackTrace();
 				}
