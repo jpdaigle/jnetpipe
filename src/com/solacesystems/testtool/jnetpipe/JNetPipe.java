@@ -5,6 +5,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -24,16 +25,16 @@ import com.solacesystems.testtool.jnetpipe.core.PipeController;
 public class JNetPipe {
 
 	private static Interpreter interpreter;
-	
+
 	public static void main(String[] args) {
-		
+
 		boolean debug = false;
 		boolean stats = false;
 		boolean shell = false;
 		int localPort = 0, remotePort = 0;
 		String remoteHost = null;
-		
-		for(int i = 0; i < args.length; i++) {
+
+		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-d")) {
 				debug = true;
 			} else if (args[i].equals("-h")) {
@@ -55,14 +56,14 @@ public class JNetPipe {
 				remotePort = Integer.parseInt(tspec[2]);
 			}
 		}
-		
+
 		if (remoteHost == null) {
 			printUsage();
 			return;
 		}
-		
+
 		configureLogging(debug);
-		
+
 		IoContext ctx = new IoContext();
 		ctx.start();
 		try {
@@ -73,16 +74,15 @@ public class JNetPipe {
 				ctx);
 			if (stats)
 				pc.enableStats();
-			
+
 			// Start PipeController (accepts connections)
 			pc.start();
-			
+
 			// Start the BeanShell ui
 			if (shell)
-				startConsole(pc);
-			
+				startConsole(pc, ctx);
+
 			// Wait forever
-			System.out.println("Sleeping...");
 			Thread.sleep(Long.MAX_VALUE);
 		} catch (IOException ex) {
 			System.err.println("MAIN>> " + ex);
@@ -92,14 +92,15 @@ public class JNetPipe {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	private static void printUsage() {
-		System.out.println("Usage: JNetPipe [-d] [--stats] [--shell] LOCALPORT:REMOTEHOST:REMOTEPORT");
+		System.out
+			.println("Usage: JNetPipe [-d] [--stats] [--shell] LOCALPORT:REMOTEHOST:REMOTEPORT");
 		System.out.println("   -d:      Debug");
 		System.out.println("   --stats: Dump stats");
 		System.out.println("   --shell: Start shell");
 	}
-	
+
 	private static void configureLogging(boolean debug) {
 		ConsoleAppender ap = new ConsoleAppender();
 		Layout layout = new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN);
@@ -108,8 +109,8 @@ public class JNetPipe {
 		ap.activateOptions();
 		BasicConfigurator.configure(ap);
 	}
-	
-	private static void startConsole(final PipeController pipe) {
+
+	private static void startConsole(final PipeController pipe, final IoContext ioContext) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -127,7 +128,7 @@ public class JNetPipe {
 				 * 
 				 * while(!loopexit) { ... };
 				 */
-				JConsole console = new JConsole() {
+				final JConsole console = new JConsole() {
 					@Override
 					public void keyPressed(KeyEvent e) {
 						super.keyPressed(e);
@@ -156,7 +157,8 @@ public class JNetPipe {
 				NameCompletionTable nct = new NameCompletionTable();
 				nct.add(interpreter.getNameSpace());
 				console.setNameCompletion(nct);
-				
+				interpreter.setShowResults(true);
+
 				// Build the frame
 				JScrollPane pane = new JScrollPane(console);
 				pane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -166,14 +168,21 @@ public class JNetPipe {
 				thread.start();
 				frame.pack();
 				frame.setVisible(true);
-				
-				// load env
-				interpreter.setShowResults(true);
-				try {
-					interpreter.eval("importCommands(\"commands\");");
-				} catch (EvalError e) {
-					e.printStackTrace();
-				}
+
+				// Defer shell init until after the BeanShell banner
+				Runnable r_setupShell = new Runnable() {
+					@Override
+					public void run() {
+						try {
+							interpreter.eval("importCommands(\"commands\");");
+							interpreter.eval("printWelcome(\"" + pipe.toString() + "\")");
+						} catch (EvalError e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				ioContext.getScheduler().schedule(r_setupShell, 250, TimeUnit.MILLISECONDS);
+
 			}
 		});
 	}

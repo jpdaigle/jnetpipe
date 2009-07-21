@@ -1,0 +1,13 @@
+printWelcome(String s) {
+	print("JNetPipe: controller started: " + s);
+	print("   Handling CTRL+C: use the 'loopexit' variable to test for exiting loops, e.g.");
+	print("      while(!loopexit) {...};");
+	print("      for(i=0; i<10 && !loopexit; i++) {...};");
+	print("");
+	print("   Available commands:");
+	print("      getOpenPipes()");
+	print("      getPipes()");
+	print("      killPipe(PipeInstance pi), killPipe(List<PipeInstance> lst)");
+	print("      printStats()");
+	print("");
+}
