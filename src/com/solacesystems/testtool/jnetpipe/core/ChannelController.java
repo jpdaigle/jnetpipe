@@ -7,11 +7,17 @@ import java.nio.channels.SocketChannel;
 import org.apache.log4j.Logger;
 
 public class ChannelController implements SocketWriter {
+	public final static int FL_DROP_READS = 1;
+	public final static int FL_DROP_WRITES = 2;
+	
+	
 	final static int BUF_SZ = 32768;
 	final static Logger trace = Logger.getLogger(ChannelController.class);
 	final SocketChannel _ch;
 	final PipeInstance _parentPipe;
 	final String _name;
+	
+	volatile int behaviour = 0;
 	private ByteBuffer _nextWrite = null;
 
 	public ChannelController(SocketChannel sc, PipeInstance parentPipe, String name) throws IOException {
@@ -31,6 +37,18 @@ public class ChannelController implements SocketWriter {
 		_parentPipe.getIoContext().regRW(SelectionKey.OP_WRITE, reg, this, flags);
 	}
 
+	public int getBehaviourFlags() {
+		return behaviour;
+	}
+
+	public void setBehaviourFlags(int flags) {
+		String strdbg = "Setting behaviour flags ";
+		strdbg += getBehaviourString();
+		trace.info(strdbg);
+		
+		behaviour = flags;
+	}
+	
 	public void close() {
 		try {
 			_ch.close();
@@ -52,7 +70,8 @@ public class ChannelController implements SocketWriter {
 				handleIoException(new IOException("Read EOF"));
 			} else if (bytesRead > 0) {
 				buf.flip();
-				_parentPipe.incomingData(buf, this);
+				if ((behaviour & FL_DROP_READS) == 0)
+					_parentPipe.incomingData(buf, this);
 			}
 		} catch (IOException ex) {
 			handleIoException(ex);
@@ -72,6 +91,14 @@ public class ChannelController implements SocketWriter {
 	public void write() {
 		final int bytesToWrite = _nextWrite.remaining();
 		try {
+			// Drop all writes and report complete
+			if ((behaviour & FL_DROP_WRITES) != 0) {
+				registerWrite(false, 0); // write done!
+				_nextWrite = null;
+				_parentPipe.writeComplete(this);
+				return;
+			}
+			
 			final int bytesWritten = _ch.write(_nextWrite);
 			if (bytesWritten == -1) {
 				handleIoException(new IOException("EOF on write"));
@@ -96,10 +123,22 @@ public class ChannelController implements SocketWriter {
 	public SocketChannel channel() {
 		return _ch;
 	}
+
+	private String getBehaviourString() {
+		int flags = getBehaviourFlags();
+		String strdbg = String.valueOf(flags) + " ";
+		if ((flags & FL_DROP_READS) != 0)
+			strdbg += "FL_DROP_READS ";
+		if ((flags & FL_DROP_WRITES) != 0)
+			strdbg += "FL_DROP_WRITES ";
+		if (flags == 0)
+			strdbg += "0";
+		return strdbg;
+	}
 	
 	@Override
 	public String toString() {
-		return _name;
+		return String.format("%s (B:%s)", _name, getBehaviourString());
 	}
 	
 }

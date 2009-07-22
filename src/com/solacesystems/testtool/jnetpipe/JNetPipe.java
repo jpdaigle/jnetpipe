@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
@@ -160,9 +158,7 @@ public class JNetPipe {
 				interpreter.setShowResults(true);
 
 				// Build the frame
-				JScrollPane pane = new JScrollPane(console);
-				pane.setBorder(new EmptyBorder(5, 5, 5, 5));
-				frame.add(pane);
+				frame.add(console);
 				final Thread thread = new Thread(interpreter, "BeanShell");
 				thread.setDaemon(true);
 				thread.start();
