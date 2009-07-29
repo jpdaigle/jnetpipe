@@ -22,6 +22,7 @@ public class ChannelController implements SocketWriter {
 
 	public ChannelController(SocketChannel sc, PipeInstance parentPipe, String name) throws IOException {
 		_ch = sc;
+		_ch.socket().setTcpNoDelay(true);
 		_parentPipe = parentPipe;
 		_ch.configureBlocking(false);
 		_name = name;
