@@ -63,7 +63,7 @@ public class PipeController implements SocketConnectAcceptor {
 		}
 	}
 
-	public synchronized void registerPipe(PipeInstance pi, boolean add) {
+	protected synchronized void registerPipe(PipeInstance pi, boolean add) {
 		if (add)
 			_pipes.add(pi);
 		else
@@ -89,6 +89,10 @@ public class PipeController implements SocketConnectAcceptor {
 		_ioContext.regServerAccept(this, false);
 	}
 
+	public IoContext getIoContext() {
+		return _ioContext;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s:%s:%s", _localPort, _remoteAddress, _remotePort);

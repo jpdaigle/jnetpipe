@@ -4,20 +4,22 @@ import java.awt.Dimension;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.util.concurrent.TimeUnit;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
+
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.util.JConsole;
 import bsh.util.NameCompletionTable;
-import com.solacesystems.testtool.jnetpipe.core.IoContext;
+
 import com.solacesystems.testtool.jnetpipe.core.PipeController;
 
 public class JNetPipe {
@@ -62,14 +64,8 @@ public class JNetPipe {
 
 		configureLogging(debug);
 
-		IoContext ctx = new IoContext();
-		ctx.start();
 		try {
-			PipeController pc = new PipeController(
-				localPort, 
-				Inet4Address.getByName(remoteHost),
-				remotePort, 
-				ctx);
+			PipeController pc = PipeControllerFactory.createPipeController(localPort, remoteHost, remotePort);
 			if (stats)
 				pc.enableStats();
 
@@ -78,7 +74,7 @@ public class JNetPipe {
 
 			// Start the BeanShell ui
 			if (shell)
-				startConsole(pc, ctx);
+				startConsole(pc);
 
 			// Wait forever
 			Thread.sleep(Long.MAX_VALUE);
@@ -108,7 +104,7 @@ public class JNetPipe {
 		BasicConfigurator.configure(ap);
 	}
 
-	private static void startConsole(final PipeController pipe, final IoContext ioContext) {
+	private static void startConsole(final PipeController pipe) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -177,7 +173,7 @@ public class JNetPipe {
 						}
 					}
 				};
-				ioContext.getScheduler().schedule(r_setupShell, 250, TimeUnit.MILLISECONDS);
+				pipe.getIoContext().getScheduler().schedule(r_setupShell, 250, TimeUnit.MILLISECONDS);
 
 			}
 		});
