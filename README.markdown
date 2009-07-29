@@ -56,8 +56,7 @@ private and public, are still subject to change as the architecture of this
 tool matures.
 
 This tool was originally conceived to aid me in performing ad-hoc testing of network failure
-scenarios when developing network software at [my day job (Solace Systems)](http://www.solacesystems.com). My employer 
-graciously accepted I release it as open source.
+scenarios when developing network software at [my day job (Solace Systems)](http://www.solacesystems.com).
 
 ## LICENSE
 JNetPipe is available under a BSD License. See 
