@@ -1,0 +1,10 @@
+// DEMO: kill all connections that have read more than 256K in
+pipes = getOpenPipes();
+for( p : pipes ) {
+	print("Open pipe: " + p);
+	print("Bytes in: " + p.stats.BytesIn);
+	if (p.stats.BytesIn > 256*1024) {
+		print("KILLING CONNECTION");
+		p.state = "DOWN";
+	}
+}
