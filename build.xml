@@ -1,0 +1,64 @@
+<project name="jnetpipe">
+	<target name="init">
+		<property name="dir.dist" value="dist/jnetpipe"/>
+		<property name="jar.dist" value="jnetpipe.jar"/>
+		<property name="dir.compile" value="_compile"/>
+		<property name="tar.dist" value="jnetpipe.tar"/>
+		
+		<path id="cp">
+			<fileset dir="./lib">
+				<include name="*.jar"/>
+			</fileset>
+		</path>
+	</target>
+
+	<target name="clean" depends="init">
+		<delete failonerror="false">
+			<fileset dir="${dir.dist}">
+				<include name="**/**" />
+			</fileset>
+			<dirset dir="${dir.dist}">
+				<include name="**/**" />
+			</dirset>
+		</delete>
+		<delete failonerror="false">
+			<fileset dir="${basedir}/dist">
+				<include name="**" />
+				<include name="**/**" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="build" depends="init">
+		<mkdir dir="${dir.dist}"/>
+		<mkdir dir="${dir.compile}"/>
+		<copy todir="${dir.compile}/">
+			<fileset dir="./">
+				<include name="commands/**"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.dist}/">
+			<fileset dir="./lib">
+				<include name="*"/>
+			</fileset>
+			<fileset dir="bin_staged">
+				<include name="*"/>
+			</fileset>
+		</copy>
+		<javac srcdir="src" destdir="${dir.compile}" debug="on">
+			<classpath refid="cp" />
+		</javac>
+		<jar destfile="${dir.dist}/${jar.dist}">
+			<fileset dir="${dir.compile}/">
+				<include name="**/**" />
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="dist" depends="build">
+		<tar destfile="${dir.dist}/../${tar.dist}" basedir="${dir.dist}/../" excludes="jnetpipe*.tar"/>
+		<gzip zipfile="${dir.dist}/../${tar.dist}.gz" src="${dir.dist}/../${tar.dist}"/>
+		<delete file="${dir.dist}/../${tar.dist}"></delete>
+	</target>
+
+</project>

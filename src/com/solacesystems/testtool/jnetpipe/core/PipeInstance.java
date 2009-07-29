@@ -44,7 +44,7 @@ public class PipeInstance implements SocketConnector {
 			_localCtrler = new ChannelController(
 				_localChannel, 
 				this, 
-				String.format("localChannel-%s", _id));
+				String.format("local-%s", _id));
 			startConnect();
 		} catch (IOException ex) {
 			trace.error("PipeInstance creation error", ex);
@@ -57,7 +57,7 @@ public class PipeInstance implements SocketConnector {
 		setState(PipeState.CONNECTING);
 		_remoteChannel = SocketChannel.open();
 		_remoteChannel.configureBlocking(false);
-		_remoteCtrler = new ChannelController(_remoteChannel, this, String.format("remoteChannel-%s", _id));
+		_remoteCtrler = new ChannelController(_remoteChannel, this, String.format("remote-%s", _id));
 		boolean connectresult = _remoteChannel.connect(_remoteSocketAddress);
 		if (!connectresult) {
 			_ioContext.regFinishConnect(this, true);
@@ -141,6 +141,24 @@ public class PipeInstance implements SocketConnector {
 	public PipeStats getStats() {
 		return _stats;
 	}
+
+	public enum CHANNEL_CONTROLLER_TYPE {
+		LOCAL, REMOTE
+	};
+
+	public ChannelController getChannelController(String which) {
+		return getChannelController(CHANNEL_CONTROLLER_TYPE.valueOf(which));
+	}
+
+	public ChannelController getChannelController(CHANNEL_CONTROLLER_TYPE type) {
+		switch (type) {
+		case LOCAL:
+			return _localCtrler;
+		case REMOTE:
+			return _remoteCtrler;
+		}
+		return null;
+	}
 	
 	/**
 	 * callback when incoming data is ready
@@ -171,7 +189,7 @@ public class PipeInstance implements SocketConnector {
 	
 	@Override
 	public String toString() {
-		return String.format("%s (%s)", _name, _pipeState);
+		return String.format("%s (%s), L:%s, R:%s", _name, _pipeState, _localCtrler, _remoteCtrler);
 	}
 
 }

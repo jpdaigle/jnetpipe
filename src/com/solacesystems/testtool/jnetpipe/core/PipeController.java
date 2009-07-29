@@ -123,7 +123,7 @@ public class PipeController implements SocketConnectAcceptor {
 		statDumperHandle = null;
 	}
 	
-	private void dumpStats() {
+	private synchronized void dumpStats() {
 		StringBuilder str = new StringBuilder();
 		str.append(String.format("Stats (%s PipeInstances)", _pipes.size()));
 		if (_pipes.size() > 0)
@@ -136,7 +136,8 @@ public class PipeController implements SocketConnectAcceptor {
 		trace.info(str);
 	}
 	
-	public List<PipeInstance> getPipes() {
-		return Collections.unmodifiableList(_pipes);
+	public synchronized List<PipeInstance> getPipes() {
+		List<PipeInstance> cpy = new ArrayList<PipeInstance>(_pipes);
+		return Collections.unmodifiableList(cpy);
 	}
 }
