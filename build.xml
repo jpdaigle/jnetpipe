@@ -20,6 +20,14 @@
 			<dirset dir="${dir.dist}">
 				<include name="**/**" />
 			</dirset>
+			<fileset dir="${basedir}/${dir.compile}">
+				<include name="**/**" />
+				<include name="**" />
+			</fileset>
+			<dirset dir="${basedir}/${dir.compile}">
+				<include name="**/**" />
+				<include name="**" />
+			</dirset>
 		</delete>
 		<delete failonerror="false">
 			<fileset dir="${basedir}/dist">
@@ -56,6 +64,11 @@
 	</target>
 	
 	<target name="dist" depends="build">
+		<delete failonerror="false">
+			<fileset dir="${basedir}/dist">
+				<include name="*" />
+			</fileset>
+		</delete>		
 		<tar destfile="${dir.dist}/../${tar.dist}" basedir="${dir.dist}/../" excludes="jnetpipe*.tar"/>
 		<gzip zipfile="${dir.dist}/../${tar.dist}.gz" src="${dir.dist}/../${tar.dist}"/>
 		<delete file="${dir.dist}/../${tar.dist}"></delete>
