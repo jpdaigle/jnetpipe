@@ -96,7 +96,7 @@ public class IoContext {
 		}
 	}
 
-	private void addRegOp(Runnable r) {
+	private synchronized void addRegOp(Runnable r) {
 		_regOps.add(r);
 		_selector.wakeup();
 	}

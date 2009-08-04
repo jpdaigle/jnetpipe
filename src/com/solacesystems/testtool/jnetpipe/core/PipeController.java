@@ -103,7 +103,7 @@ public class PipeController implements SocketConnectAcceptor {
 		_state = newstate;
 	}
 
-	public void enableStats() {
+	public synchronized void enableStats() {
 		if (statDumperHandle != null)
 			return;
 		final Runnable statDumper = new Runnable() {
@@ -120,7 +120,7 @@ public class PipeController implements SocketConnectAcceptor {
 			statDumper, 0, 1000, TimeUnit.MILLISECONDS);
 	}
 	
-	public void disableStats() {
+	public synchronized void disableStats() {
 		if (statDumperHandle == null)
 			return;
 		statDumperHandle.cancel(false);
