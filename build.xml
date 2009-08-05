@@ -52,6 +52,9 @@
 			<fileset dir="bin_staged">
 				<include name="*"/>
 			</fileset>
+			<fileset dir="${basedir}">
+				<include name="*.markdown"/>
+			</fileset>
 		</copy>
 		<javac srcdir="src" destdir="${dir.compile}" debug="on">
 			<classpath refid="cp" />
