@@ -13,28 +13,9 @@
 	</target>
 
 	<target name="clean" depends="init">
-		<delete failonerror="false">
-			<fileset dir="${dir.dist}">
-				<include name="**/**" />
-			</fileset>
-			<dirset dir="${dir.dist}">
-				<include name="**/**" />
-			</dirset>
-			<fileset dir="${basedir}/${dir.compile}">
-				<include name="**/**" />
-				<include name="**" />
-			</fileset>
-			<dirset dir="${basedir}/${dir.compile}">
-				<include name="**/**" />
-				<include name="**" />
-			</dirset>
-		</delete>
-		<delete failonerror="false">
-			<fileset dir="${basedir}/dist">
-				<include name="**" />
-				<include name="**/**" />
-			</fileset>
-		</delete>
+		<delete dir="${dir.dist}" verbose="true" includeemptydirs="true" />
+		<delete dir="${dir.compile}" verbose="true" includeemptydirs="true" />
+		<delete dir="${basedir}/dist" verbose="true" includeemptydirs="true" />
 	</target>
 
 	<target name="build" depends="init">
@@ -56,6 +37,7 @@
 				<include name="*.markdown"/>
 			</fileset>
 		</copy>
+		<chmod dir="${dir.dist}/" includes="*.sh" perm="755"/>
 		<javac srcdir="src" destdir="${dir.compile}" debug="on">
 			<classpath refid="cp" />
 		</javac>
