@@ -1,6 +1,6 @@
 <project name="jnetpipe">
 	<target name="init">
-		<property name="dir.dist" value="dist/jnetpipe"/>
+		<property name="dir.dist" value="_dist/jnetpipe"/>
 		<property name="jar.dist" value="jnetpipe.jar"/>
 		<property name="dir.compile" value="_compile"/>
 		<property name="tar.dist" value="jnetpipe.tar"/>
@@ -13,9 +13,9 @@
 	</target>
 
 	<target name="clean" depends="init">
-		<delete dir="${dir.dist}" verbose="true" includeemptydirs="true" />
-		<delete dir="${dir.compile}" verbose="true" includeemptydirs="true" />
-		<delete dir="${basedir}/dist" verbose="true" includeemptydirs="true" />
+		<delete dir="${dir.dist}" includeemptydirs="true" />
+		<delete dir="${dir.compile}" includeemptydirs="true" />
+		<delete dir="${basedir}/_dist" includeemptydirs="true" />
 	</target>
 
 	<target name="build" depends="init">

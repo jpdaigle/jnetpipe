@@ -2,4 +2,5 @@ bin/
 .settings/
 *~
 dist/
+_dist/
 _compile/
